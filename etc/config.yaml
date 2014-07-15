@@ -4,12 +4,14 @@
 bindaddr: 127.0.0.1:53
 
 backends:
+   - pattern: example.net
+     servers:
+      - 4.4.4.4:53
+      - 8.8.8.8:53
    - pattern: local
      servers:
       - 72.14.188.5:53
       - 72.14.179.5:53
 default:
  servers:
-   - 10.11.97.15:53
-   - 10.12.64.15:53
-   - 10.12.65.15:53
+   - 127.0.0.1:53
