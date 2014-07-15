@@ -32,10 +32,10 @@ by default dns-router reads its configuration from /etc/dns-router/config.yaml
      - 10.12.64.15:53
      - 10.12.65.15:53
    backends:
-   - pattern: llnw.net
+   - pattern: example.net
      servers:
-     - 10.12.64.15:53
-     - 10.12.65.15:53
+      - 4.4.4.4:53
+      - 8.8.8.8:53
    - pattern: localdomain
      servers:
      - 127.0.0.1:53
