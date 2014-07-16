@@ -1,12 +1,12 @@
 # Where we bind
 
 #bindaddr: 127.0.0.1:5190
-bindaddr: 127.0.0.1:53
+bindaddr: 127.0.0.1:5353
 
 backends:
    - pattern: example.net
      servers:
-      - 4.4.4.4:53
+      - 8.8.4.4:53
       - 8.8.8.8:53
    - pattern: local
      servers:
