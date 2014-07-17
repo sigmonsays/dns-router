@@ -34,7 +34,7 @@ type RequestHandler struct {
 func NewRequestHandler(num_servers int, DefaultServers []string) *RequestHandler {
    h := &RequestHandler{
       DefaultServers: DefaultServers,
-      alive: make([]CheckState, num_servers+1),
+      alive: make([]CheckState, num_servers),
    }
    return h
 }
