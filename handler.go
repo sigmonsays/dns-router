@@ -1,7 +1,6 @@
 package dns_router
 import (
    "fmt"
-   "sync"
    "github.com/miekg/dns"
 )
 
@@ -13,7 +12,6 @@ type Handler interface {
 
 
 type RequestHandler struct {
-   mux sync.RWMutex
 
    // dns servers to use incase backend fails
    DefaultServers []string
@@ -21,8 +19,6 @@ type RequestHandler struct {
    // healthcheck type
    HealthCheck HealthChecker
 
-   // if the handler is alive according to health check
-   alive []CheckState
 
    // unique handler number
    Number int
@@ -34,7 +30,6 @@ type RequestHandler struct {
 func NewRequestHandler(num_servers int, DefaultServers []string) *RequestHandler {
    h := &RequestHandler{
       DefaultServers: DefaultServers,
-      alive: make([]CheckState, num_servers),
    }
    return h
 }
@@ -44,23 +39,11 @@ func (h *RequestHandler) ServerName(idx int) string {
 }
 
 func (h *RequestHandler) SetAlive(idx int, alive CheckState) error {
-   h.mux.Lock()
-   defer h.mux.Unlock()
-   h.alive[idx]=alive
-   return nil
+   return h.HealthCheck.SetAlive(idx, alive)
 }
 
 func (h *RequestHandler) BackendAlive() bool {
-   h.mux.RLock()
-   defer h.mux.RUnlock()
-
-   // if any backend is alive we say the group is alive...
-   for _, alive := range h.alive {
-      if alive == StateUp {
-         return true
-      }
-   }
-   return false
+   return h.HealthCheck.BackendAlive()
 }
 func (h *RequestHandler) QueryDescription(r *dns.Msg) string {
    return fmt.Sprintf("%s", r.Question[0].Name)

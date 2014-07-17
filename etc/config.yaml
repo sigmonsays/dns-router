@@ -3,16 +3,23 @@
 bindaddr: 127.0.0.1:5190
 #bindaddr: 127.0.0.1:53
 
+healthcheck:
+  interval: 3
+
+
 backends:
    - pattern: example.net
+     healthcheck: false
      servers:
       - 8.8.4.4:53
       - 8.8.8.8:53
    - pattern: local
+     healthcheck: false
      servers:
       - 72.14.188.5:53
       - 72.14.179.5:53
    - pattern: llnw.net
+     healthcheck: true
      servers:
       - 10.12.64.15:53
       - 10.12.65.15:53

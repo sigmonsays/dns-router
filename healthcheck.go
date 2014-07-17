@@ -18,16 +18,22 @@ func (s CheckState) String() string {
    return CheckStates[s]
 }
 
+/*
+   // if the handler is alive according to health check
+   alive []CheckState
+*/
 
 type HealthChecker interface {
    Check([]CheckState) error
+   SetAlive(idx int, alive CheckState) error
+   BackendAlive() bool
 }
 
 
-func HealthCheck(hc HealthChecker, backend Handler) {
+func HealthCheck(conf HealthCheckConfig, hc HealthChecker, backend Handler) {
    pstate := make([]CheckState, backend.ServerCount())
    state := make([]CheckState, backend.ServerCount())
-   interval := time.Duration(5) * time.Second
+   interval := time.Duration(conf.Interval) * time.Second
    c := time.Tick(interval)
 
    fmt.Printf("healthcheck started\n")

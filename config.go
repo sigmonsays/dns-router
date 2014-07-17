@@ -7,12 +7,20 @@ import (
 )
 type ApplicationConfig struct {
    BindAddr string
-   Default BackendConfig
+   HealthCheck HealthCheckConfig
+   Default DefaultBackend
    Backends []BackendConfig
+}
+type HealthCheckConfig struct {
+   Interval int
+}
+type DefaultBackend struct {
+   Servers []string
 }
 
 type BackendConfig struct {
    Pattern string
+   HealthCheck bool
    Servers []string
 }
 

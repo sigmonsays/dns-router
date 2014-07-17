@@ -41,22 +41,32 @@ func main() {
       request_handler.Number = num
       request_handler.Servers = b.Servers
 
-      healthcheck := dns_router.NewPingHealthCheck(b.Servers)
+      var healthcheck dns_router.HealthChecker
+      if b.HealthCheck {
+         healthcheck = dns_router.NewPingHealthCheck(b.Servers)
+      } else {
+         healthcheck = dns_router.NewNullHealthCheck()
+      }
+      request_handler.HealthCheck = healthcheck
 
       t := &PatternHandler{
          RequestHandler: request_handler,
          Pattern: b.Pattern,
       }
 
-      go dns_router.HealthCheck(healthcheck, t)
+      if b.HealthCheck {
+         go dns_router.HealthCheck(conf.HealthCheck, healthcheck, t)
+      }
 
       mux.Handle(b.Pattern, t)
       fmt.Printf("pattern=%s servers=%s\n", b.Pattern, b.Servers)
    }
 
+   healthcheck := dns_router.NewNullHealthCheck()
    request_handler := dns_router.NewRequestHandler(len(conf.Default.Servers), conf.Default.Servers)
    request_handler.Number = 0
    request_handler.Servers = conf.Default.Servers
+   request_handler.HealthCheck = healthcheck
    t := &PatternHandler{
       RequestHandler: request_handler,
       Pattern: ".",

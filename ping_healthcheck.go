@@ -2,10 +2,12 @@ package dns_router
 import (
    "fmt"
    "net"
+   "sync"
    "os/exec"
 )
 
 type PingHealthCheck struct {
+   mux sync.RWMutex
    Servers []string
    State []CheckState
 }
@@ -40,3 +42,23 @@ func (hc *PingHealthCheck) Check(state []CheckState) error {
    return nil
 }
 
+func (hc *PingHealthCheck) BackendAlive() bool {
+
+   hc.mux.RLock()
+   defer hc.mux.RUnlock()
+
+   // if any backend is alive we say the group is alive...
+   for _, alive := range hc.State {
+      if alive == StateUp {
+         return true
+      }
+   }
+   return false
+}
+
+func (hc *PingHealthCheck) SetAlive(idx int, alive CheckState) error {
+   hc.mux.Lock()
+   defer hc.mux.Unlock()
+   hc.State[idx]=alive
+   return nil
+}
