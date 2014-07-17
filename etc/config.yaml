@@ -1,7 +1,7 @@
 # Where we bind
 
-#bindaddr: 127.0.0.1:5190
-bindaddr: 127.0.0.1:5353
+bindaddr: 127.0.0.1:5190
+#bindaddr: 127.0.0.1:53
 
 backends:
    - pattern: example.net
@@ -12,6 +12,11 @@ backends:
      servers:
       - 72.14.188.5:53
       - 72.14.179.5:53
+   - pattern: llnw.net
+     servers:
+      - 10.12.64.15:53
+      - 10.12.65.15:53
 default:
  servers:
-   - 127.0.0.1:53
+   - 8.8.4.4:53
+   - 8.8.8.8:53

@@ -33,19 +33,33 @@ func main() {
 
    mux := dns.NewServeMux()
 
-   for num, b := range conf.Backends {
+
+   for n, b := range conf.Backends {
+      num := n+1
+
+      request_handler := dns_router.NewRequestHandler(len(b.Servers), conf.Default.Servers)
+      request_handler.Number = num
+      request_handler.Servers = b.Servers
+
+      healthcheck := dns_router.NewPingHealthCheck(b.Servers)
+
       t := &PatternHandler{
+         RequestHandler: request_handler,
          Pattern: b.Pattern,
-         Number: num+1,
-         Servers: b.Servers,
       }
+
+      go dns_router.HealthCheck(healthcheck, t)
+
       mux.Handle(b.Pattern, t)
       fmt.Printf("pattern=%s servers=%s\n", b.Pattern, b.Servers)
    }
+
+   request_handler := dns_router.NewRequestHandler(len(conf.Default.Servers), conf.Default.Servers)
+   request_handler.Number = 0
+   request_handler.Servers = conf.Default.Servers
    t := &PatternHandler{
+      RequestHandler: request_handler,
       Pattern: ".",
-      Number: 0,
-      Servers: conf.Default.Servers,
    }
    mux.Handle(".", t)
 

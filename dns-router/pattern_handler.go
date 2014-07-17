@@ -2,26 +2,26 @@ package main
 import (
    "fmt"
    "github.com/miekg/dns"
+   "github.com/sigmonsays/dns-router"
 )
 
 type PatternHandler struct {
+
+   *dns_router.RequestHandler
+
    Pattern string
 
-   // unique handler number
-   Number int
-
-   // where we send requests
-   Servers []string
-}
-
-func (h *PatternHandler) QueryDescription(r *dns.Msg) string {
-   return fmt.Sprintf("%s", r.Question[0].Name)
 }
 func (h *PatternHandler) AnswerDescription(r *dns.Msg) string {
    return fmt.Sprintf("%s", r.Answer)
 }
-
 func (h *PatternHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
+
+   if h.BackendAlive() == false {
+      h.ServeDefaultDNS(w, r)
+      return
+   }
+
    addr := w.RemoteAddr()
    query := h.QueryDescription(r)
    c := new(dns.Client)
@@ -35,4 +35,8 @@ func (h *PatternHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
       w.WriteMsg(reply)
       break
    }
+}
+
+func (h *PatternHandler) ServerCount() int {
+   return len(h.Servers)
 }
