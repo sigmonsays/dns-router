@@ -1,89 +1,86 @@
 package main
+
 import (
-   "os"
-   "fmt"
-   "flag"
-   "github.com/miekg/dns"
-   "github.com/sigmonsays/dns-router"
-   "github.com/davecgh/go-spew/spew"
+	"flag"
+	"fmt"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/miekg/dns"
+	"github.com/sigmonsays/dns-router"
+	"os"
 )
 
-
 var spewconf = spew.ConfigState{
-   Indent:         "  ",
-   DisableMethods: true,
-   MaxDepth:       5,
+	Indent:         "  ",
+	DisableMethods: true,
+	MaxDepth:       5,
 }
 
-func main() { 
-   conf := dns_router.Default()
+func main() {
+	conf := dns_router.Default()
 
-   var configfile string
-   flag.StringVar(&configfile, "config", "/etc/dns-router/config.yaml", "configuration file")
-   flag.Parse()
+	var configfile string
+	flag.StringVar(&configfile, "config", "/etc/dns-router/config.yaml", "configuration file")
+	flag.Parse()
 
-   err := conf.LoadYaml(configfile)
-   if err != nil {
-        fmt.Printf("LoadYaml %s: %s", configfile, err)
-        os.Exit(1)
-   }
+	err := conf.LoadYaml(configfile)
+	if err != nil {
+		fmt.Printf("LoadYaml %s: %s", configfile, err)
+		os.Exit(1)
+	}
 
+	conf.PrintConfig()
 
-   conf.PrintConfig()
+	mux := dns.NewServeMux()
 
-   mux := dns.NewServeMux()
+	for n, b := range conf.Backends {
+		num := n + 1
 
+		request_handler := dns_router.NewRequestHandler(len(b.Servers), conf.Default.Servers)
+		request_handler.Number = num
+		request_handler.Servers = b.Servers
 
-   for n, b := range conf.Backends {
-      num := n+1
+		var healthcheck dns_router.HealthChecker
+		if b.HealthCheck {
+			healthcheck = dns_router.NewPingHealthCheck(b.Servers)
+		} else {
+			healthcheck = dns_router.NewNullHealthCheck()
+		}
+		request_handler.HealthCheck = healthcheck
 
-      request_handler := dns_router.NewRequestHandler(len(b.Servers), conf.Default.Servers)
-      request_handler.Number = num
-      request_handler.Servers = b.Servers
+		t := &PatternHandler{
+			RequestHandler: request_handler,
+			Pattern:        b.Pattern,
+		}
 
-      var healthcheck dns_router.HealthChecker
-      if b.HealthCheck {
-         healthcheck = dns_router.NewPingHealthCheck(b.Servers)
-      } else {
-         healthcheck = dns_router.NewNullHealthCheck()
-      }
-      request_handler.HealthCheck = healthcheck
+		if b.HealthCheck {
+			go dns_router.HealthCheck(conf.HealthCheck, healthcheck, t)
+		}
 
-      t := &PatternHandler{
-         RequestHandler: request_handler,
-         Pattern: b.Pattern,
-      }
+		mux.Handle(b.Pattern, t)
+		fmt.Printf("pattern=%s servers=%s\n", b.Pattern, b.Servers)
+	}
 
-      if b.HealthCheck {
-         go dns_router.HealthCheck(conf.HealthCheck, healthcheck, t)
-      }
+	healthcheck := dns_router.NewNullHealthCheck()
+	request_handler := dns_router.NewRequestHandler(len(conf.Default.Servers), conf.Default.Servers)
+	request_handler.Number = 0
+	request_handler.Servers = conf.Default.Servers
+	request_handler.HealthCheck = healthcheck
+	t := &PatternHandler{
+		RequestHandler: request_handler,
+		Pattern:        ".",
+	}
+	mux.Handle(".", t)
 
-      mux.Handle(b.Pattern, t)
-      fmt.Printf("pattern=%s servers=%s\n", b.Pattern, b.Servers)
-   }
+	srv := &dns.Server{
+		Addr:    conf.BindAddr,
+		Net:     "udp",
+		Handler: mux,
+	}
 
-   healthcheck := dns_router.NewNullHealthCheck()
-   request_handler := dns_router.NewRequestHandler(len(conf.Default.Servers), conf.Default.Servers)
-   request_handler.Number = 0
-   request_handler.Servers = conf.Default.Servers
-   request_handler.HealthCheck = healthcheck
-   t := &PatternHandler{
-      RequestHandler: request_handler,
-      Pattern: ".",
-   }
-   mux.Handle(".", t)
+	fmt.Printf("\nready\n")
+	err = srv.ListenAndServe()
+	if err != nil {
+		fmt.Printf("Listen %s\n", err)
+	}
 
-   srv := &dns.Server{
-      Addr: conf.BindAddr,
-      Net: "udp",
-      Handler: mux,
-   }
-
-   fmt.Printf("\nready\n")
-   err = srv.ListenAndServe()
-   if err != nil {
-      fmt.Printf("Listen %s\n", err)
-   }
-   
 }
-

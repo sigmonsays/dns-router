@@ -6,6 +6,8 @@ bindaddr: 127.0.0.1:5190
 healthcheck:
   interval: 3
 
+hosts:
+   thechive.com: 127.0.0.1
 
 backends:
    - pattern: example.net

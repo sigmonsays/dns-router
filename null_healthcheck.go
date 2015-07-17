@@ -1,24 +1,23 @@
 package dns_router
-import (
-)
+
+import ()
 
 type NullHealthCheck struct {
 }
 
 func NewNullHealthCheck() *NullHealthCheck {
-   hc := &NullHealthCheck{
-   }
-   return hc
+	hc := &NullHealthCheck{}
+	return hc
 }
 
 func (hc *NullHealthCheck) Check(state []CheckState) error {
-   return nil
+	return nil
 }
 
 func (hc *NullHealthCheck) BackendAlive() bool {
-   return true
+	return true
 }
 
 func (hc *NullHealthCheck) SetAlive(idx int, alive CheckState) error {
-   return nil
+	return nil
 }
