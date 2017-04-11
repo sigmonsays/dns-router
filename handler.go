@@ -2,6 +2,7 @@ package dns_router
 
 import (
 	"fmt"
+
 	"github.com/miekg/dns"
 )
 
@@ -49,17 +50,18 @@ func (h *RequestHandler) QueryDescription(r *dns.Msg) string {
 }
 
 func (h *RequestHandler) ServeDefaultDNS(w dns.ResponseWriter, r *dns.Msg) {
-	addr := w.RemoteAddr()
-	query := h.QueryDescription(r)
+	// addr := w.RemoteAddr()
+	// query := h.QueryDescription(r)
 	c := new(dns.Client)
 	for _, s := range h.DefaultServers {
 		reply, _, err := c.Exchange(r, s)
 		if err != nil {
-			fmt.Printf("- [default] %s %d [%s] %s - %s\n", addr, r.Id, s, query, err)
+			// fmt.Printf("- [default] %s %d [%s] %s - %s\n", addr, r.Id, s, query, err)
 			continue
 		}
-		fmt.Printf("+ [default] %s %d [%s] %s - %d\n", addr, r.Id, s, query, len(reply.Answer))
+		// fmt.Printf("+ [default] %s %d [%s] %s - %d\n", addr, r.Id, s, query, len(reply.Answer))
 		w.WriteMsg(reply)
 		break
 	}
+
 }

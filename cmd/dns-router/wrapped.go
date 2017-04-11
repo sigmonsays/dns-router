@@ -1,11 +1,6 @@
 package main
 
-import (
-	"bytes"
-	"fmt"
-
-	"gopkg.in/natefinch/lumberjack.v2"
-)
+import "gopkg.in/natefinch/lumberjack.v2"
 
 import (
 	"github.com/miekg/dns"
@@ -34,11 +29,6 @@ type WrappedOptions struct {
 }
 
 func (me *WrappedHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
-
-	// log each request
-	buf := bytes.NewBuffer(nil)
-	buf.WriteString(fmt.Sprintf("%s", r))
-	fmt.Fprintf(me.Log, buf.String())
 
 	me.Handler.ServeDNS(w, r)
 
