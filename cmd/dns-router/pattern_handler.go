@@ -89,11 +89,11 @@ func (h *PatternHandler) LogRoundTrip(w dns.ResponseWriter, in *dns.Msg, out *dn
 	if ralias_exists == false {
 		ralias = ""
 	}
-	fmt.Fprintf(buf, "%s/%s ", ralias, raddr)
+	fmt.Fprintf(buf, "%s/%s ", ralias, rip)
 	if lalias_exists == false {
 		lalias = ""
 	}
-	fmt.Fprintf(buf, "%s/%s ", lalias, laddr)
+	fmt.Fprintf(buf, "%s/%s ", lalias, lip)
 	fmt.Fprintf(buf, "%s %s ", question, answer)
 	fmt.Printf("RoundTrip %s\n", buf.String())
 
