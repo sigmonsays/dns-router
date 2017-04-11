@@ -57,8 +57,12 @@ func (h *PatternHandler) FindOverride(in *dns.Msg) *OverrideResponse {
 
 func (h *PatternHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
+	log := bytes.NewBuffer(nil) // request log
+
 	override := h.FindOverride(r)
 	if override.Found {
+
+		fmt.Fprintf(log, "override=true ")
 
 		reply := new(dns.Msg)
 		reply.SetReply(r)
@@ -73,7 +77,7 @@ func (h *PatternHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		rr.A = net.ParseIP(override.IP)
 		reply.Answer = append(reply.Answer, rr)
 		w.WriteMsg(reply)
-		h.LogRoundTrip(w, r, reply)
+		h.LogRoundTrip(log, w, r, reply)
 		return
 	}
 
@@ -93,7 +97,7 @@ func (h *PatternHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		}
 		// fmt.Printf("+ %s %d [%s %s] %s - %d\n", addr, r.Id, h.Pattern, s, query, len(reply.Answer))
 		w.WriteMsg(reply)
-		h.LogRoundTrip(w, r, reply)
+		h.LogRoundTrip(log, w, r, reply)
 		break
 	}
 }
@@ -102,7 +106,7 @@ func (h *PatternHandler) ServerCount() int {
 	return len(h.Servers)
 }
 
-func (h *PatternHandler) LogRoundTrip(w dns.ResponseWriter, in *dns.Msg, out *dns.Msg) {
+func (h *PatternHandler) LogRoundTrip(log *bytes.Buffer, w dns.ResponseWriter, in *dns.Msg, out *dns.Msg) {
 	laddr := w.LocalAddr()
 	raddr := w.RemoteAddr()
 
@@ -147,6 +151,10 @@ func (h *PatternHandler) LogRoundTrip(w dns.ResponseWriter, in *dns.Msg, out *dn
 	}
 	fmt.Fprintf(buf, "%s/%s ", lalias, lip)
 	fmt.Fprintf(buf, "%s %s ", question, answer)
+
+	// add additional log info
+	buf.Write(log.Bytes())
+
 	fmt.Printf("RoundTrip %s\n", buf.String())
 
 	if h.Log != nil {
