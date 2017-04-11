@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net"
 	"time"
 
 	"github.com/miekg/dns"
@@ -13,6 +14,7 @@ import (
 type PatternHandler struct {
 	*dns_router.RequestHandler
 
+	IPAlias map[string]string
 	Log     io.Writer
 	Pattern string
 }
@@ -52,6 +54,15 @@ func (h *PatternHandler) LogRoundTrip(w dns.ResponseWriter, in *dns.Msg, out *dn
 	laddr := w.LocalAddr()
 	raddr := w.RemoteAddr()
 
+	rhost, _, _ := net.SplitHostPort(raddr.String())
+	rip := net.ParseIP(rhost)
+
+	lhost, _, _ := net.SplitHostPort(laddr.String())
+	lip := net.ParseIP(lhost)
+
+	ralias, ralias_exists := h.IPAlias[rip.String()]
+	lalias, lalias_exists := h.IPAlias[lip.String()]
+
 	// output a single log record for a request/response
 
 	//  0 src address
@@ -75,7 +86,15 @@ func (h *PatternHandler) LogRoundTrip(w dns.ResponseWriter, in *dns.Msg, out *dn
 	answer := buf.String()
 
 	buf.Reset()
-	fmt.Fprintf(buf, "%s %s %s %s", laddr, raddr, question, answer)
+	if ralias_exists == false {
+		ralias = ""
+	}
+	fmt.Fprintf(buf, "%s/%s ", ralias, raddr)
+	if lalias_exists == false {
+		lalias = ""
+	}
+	fmt.Fprintf(buf, "%s/%s ", lalias, laddr)
+	fmt.Fprintf(buf, "%s %s ", question, answer)
 	fmt.Printf("RoundTrip %s\n", buf.String())
 
 	if h.Log != nil {

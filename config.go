@@ -23,6 +23,9 @@ type ApplicationConfig struct {
 	// override A records
 	Hosts map[string][]string
 
+	// IP Alias maps an ip address to a shortname for logging convenience
+	IPAlias map[string]string
+
 	// logging config
 	Logging LoggingConfig
 }

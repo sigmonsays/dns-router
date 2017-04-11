@@ -62,6 +62,7 @@ func main() {
 			RequestHandler: request_handler,
 			Pattern:        b.Pattern,
 			Log:            log,
+			IPAlias:        conf.IPAlias,
 		}
 
 		if b.HealthCheck {
@@ -83,6 +84,7 @@ func main() {
 		RequestHandler: request_handler,
 		Pattern:        ".",
 		Log:            log,
+		IPAlias:        conf.IPAlias,
 	}
 
 	wt := NewWrappedHandler(t, wopts)
