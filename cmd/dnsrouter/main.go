@@ -22,7 +22,7 @@ func main() {
 	conf := dns_router.Default()
 
 	var configfile string
-	flag.StringVar(&configfile, "config", "/etc/dns-router/config.yaml", "configuration file")
+	flag.StringVar(&configfile, "config", "/etc/dnsrouter/config.yaml", "configuration file")
 	flag.Parse()
 
 	err := conf.LoadYaml(configfile)
