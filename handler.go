@@ -63,5 +63,4 @@ func (h *RequestHandler) ServeDefaultDNS(w dns.ResponseWriter, r *dns.Msg) {
 		w.WriteMsg(reply)
 		break
 	}
-
 }

@@ -20,8 +20,8 @@ type ApplicationConfig struct {
 	// backends based on pattern
 	Backends []BackendConfig
 
-	// override A records
-	Hosts map[string][]string
+	// simple override A records
+	Hosts map[string]string
 
 	// IP Alias maps an ip address to a shortname for logging convenience
 	IPAlias map[string]string
@@ -49,7 +49,7 @@ type BackendConfig struct {
 func Default() *ApplicationConfig {
 	c := &ApplicationConfig{
 		BindAddr: "127.0.0.1:53",
-		Hosts:    make(map[string][]string),
+		Hosts:    make(map[string]string),
 	}
 	return c
 }

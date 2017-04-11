@@ -63,6 +63,7 @@ func main() {
 			Pattern:        b.Pattern,
 			Log:            log,
 			IPAlias:        conf.IPAlias,
+			Override:       conf.Hosts,
 		}
 
 		if b.HealthCheck {
@@ -85,6 +86,7 @@ func main() {
 		Pattern:        ".",
 		Log:            log,
 		IPAlias:        conf.IPAlias,
+		Override:       conf.Hosts,
 	}
 
 	wt := NewWrappedHandler(t, wopts)

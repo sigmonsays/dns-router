@@ -14,15 +14,68 @@ import (
 type PatternHandler struct {
 	*dns_router.RequestHandler
 
-	IPAlias map[string]string
-	Log     io.Writer
-	Pattern string
+	Override map[string]string
+	IPAlias  map[string]string
+	Log      io.Writer
+	Pattern  string
 }
 
 func (h *PatternHandler) AnswerDescription(r *dns.Msg) string {
 	return fmt.Sprintf("%s", r.Answer)
 }
+
+type OverrideResponse struct {
+
+	// name found in the question section for this override
+	Name string
+
+	// found a valid override to return
+	Found bool
+
+	// a canned ip response
+	IP string
+}
+
+func (h *PatternHandler) FindOverride(in *dns.Msg) *OverrideResponse {
+	ret := &OverrideResponse{
+		Found: false,
+	}
+
+	for _, q := range in.Question {
+		if q.Qtype == dns.TypeA || q.Qtype == dns.TypeCNAME {
+			result, ok := h.Override[q.Name]
+			if ok {
+				ret.Found = true
+				ret.Name = q.Name
+				ret.IP = result
+				break
+			}
+		}
+	}
+	return ret
+}
+
 func (h *PatternHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
+
+	override := h.FindOverride(r)
+	if override.Found {
+
+		reply := new(dns.Msg)
+		reply.SetReply(r)
+		rheader := dns.RR_Header{
+			Name:   override.Name,
+			Rrtype: dns.TypeA,
+			Class:  dns.ClassINET,
+			Ttl:    300,
+		}
+		rr := new(dns.A)
+		rr.Hdr = rheader
+		rr.A = net.ParseIP(override.IP)
+		reply.Answer = append(reply.Answer, rr)
+		w.WriteMsg(reply)
+		h.LogRoundTrip(w, r, reply)
+		return
+	}
 
 	if h.BackendAlive() == false {
 		h.ServeDefaultDNS(w, r)
@@ -40,7 +93,6 @@ func (h *PatternHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		}
 		// fmt.Printf("+ %s %d [%s %s] %s - %d\n", addr, r.Id, h.Pattern, s, query, len(reply.Answer))
 		w.WriteMsg(reply)
-
 		h.LogRoundTrip(w, r, reply)
 		break
 	}
