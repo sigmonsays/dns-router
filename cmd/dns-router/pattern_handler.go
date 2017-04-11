@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"time"
 
 	"github.com/miekg/dns"
 	"github.com/sigmonsays/dns-router"
@@ -11,6 +13,7 @@ import (
 type PatternHandler struct {
 	*dns_router.RequestHandler
 
+	Log     io.Writer
 	Pattern string
 }
 
@@ -71,7 +74,13 @@ func (h *PatternHandler) LogRoundTrip(w dns.ResponseWriter, in *dns.Msg, out *dn
 	}
 	answer := buf.String()
 
-	fmt.Printf("RoundTrip %s %s %s %s\n", laddr, raddr, question, answer)
+	buf.Reset()
+	fmt.Fprintf(buf, "%s %s %s %s", laddr, raddr, question, answer)
+	fmt.Printf("RoundTrip %s\n", buf.String())
+
+	if h.Log != nil {
+		fmt.Fprintf(h.Log, "%s %s\n", time.Now().Format(time.RFC3339Nano), buf.String())
+	}
 
 }
 

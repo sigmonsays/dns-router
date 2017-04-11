@@ -3,10 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/miekg/dns"
 	"github.com/sigmonsays/dns-router"
-	"os"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var spewconf = spew.ConfigState{
@@ -28,13 +30,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	wopts := &WrappedOptions{
-		LogFile: conf.Logging.Directory,
-	}
+	wopts := &WrappedOptions{}
 
 	conf.PrintConfig()
 
 	mux := dns.NewServeMux()
+
+	log := &lumberjack.Logger{
+		Filename: conf.Logging.Directory,
+		// MaxSize:    500, // megabytes
+		MaxBackups: 30,
+		MaxAge:     120, // days
+	}
 
 	for n, b := range conf.Backends {
 		num := n + 1
@@ -54,6 +61,7 @@ func main() {
 		t := &PatternHandler{
 			RequestHandler: request_handler,
 			Pattern:        b.Pattern,
+			Log:            log,
 		}
 
 		if b.HealthCheck {

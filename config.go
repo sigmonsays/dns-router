@@ -13,10 +13,18 @@ type ApplicationConfig struct {
 	DataDir     string
 	BindAddr    string
 	HealthCheck HealthCheckConfig
-	Default     DefaultBackend
-	Backends    []BackendConfig
-	Hosts       map[string][]string
-	Logging     LoggingConfig
+
+	// catch all backend
+	Default DefaultBackend
+
+	// backends based on pattern
+	Backends []BackendConfig
+
+	// override A records
+	Hosts map[string][]string
+
+	// logging config
+	Logging LoggingConfig
 }
 type LoggingConfig struct {
 	Enabled   bool
