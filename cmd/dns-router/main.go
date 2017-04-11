@@ -82,6 +82,7 @@ func main() {
 	t := &PatternHandler{
 		RequestHandler: request_handler,
 		Pattern:        ".",
+		Log:            log,
 	}
 
 	wt := NewWrappedHandler(t, wopts)
