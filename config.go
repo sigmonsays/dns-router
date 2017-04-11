@@ -30,6 +30,7 @@ type BackendConfig struct {
 func Default() *ApplicationConfig {
 	c := &ApplicationConfig{
 		BindAddr: "127.0.0.1:53",
+		Hosts:    make(map[string][]string),
 	}
 	return c
 }
