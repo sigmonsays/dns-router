@@ -28,6 +28,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	wopts := &WrappedOptions{
+		LogFile: conf.Logging.Directory,
+	}
+
 	conf.PrintConfig()
 
 	mux := dns.NewServeMux()
@@ -56,7 +60,9 @@ func main() {
 			go dns_router.HealthCheck(conf.HealthCheck, healthcheck, t)
 		}
 
-		mux.Handle(b.Pattern, t)
+		wt := NewWrappedHandler(t, wopts)
+
+		mux.Handle(b.Pattern, wt)
 		fmt.Printf("pattern=%s servers=%s\n", b.Pattern, b.Servers)
 	}
 
@@ -69,7 +75,9 @@ func main() {
 		RequestHandler: request_handler,
 		Pattern:        ".",
 	}
-	mux.Handle(".", t)
+
+	wt := NewWrappedHandler(t, wopts)
+	mux.Handle(".", wt)
 
 	srv := &dns.Server{
 		Addr:    conf.BindAddr,
