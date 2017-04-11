@@ -30,7 +30,7 @@ func (h *PatternHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	for _, s := range h.Servers {
 		reply, _, err := c.Exchange(r, s)
 		if err != nil {
-			fmt.Printf("- %s %d [%s %s] %s - %s\n", addr, r.Id, h.Pattern, s, query, err)
+			fmt.Printf("ERROR addr=%s id=%d [%s %s] query=%s: error %s\n", addr, r.Id, h.Pattern, s, query, err)
 			continue
 		}
 		// fmt.Printf("+ %s %d [%s %s] %s - %d\n", addr, r.Id, h.Pattern, s, query, len(reply.Answer))
