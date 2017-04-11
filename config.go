@@ -3,16 +3,24 @@ package dns_router
 import (
 	"bytes"
 	"fmt"
-	"launchpad.net/goyaml"
 	"os"
+	"path/filepath"
+
+	"launchpad.net/goyaml"
 )
 
 type ApplicationConfig struct {
+	DataDir     string
 	BindAddr    string
 	HealthCheck HealthCheckConfig
 	Default     DefaultBackend
 	Backends    []BackendConfig
 	Hosts       map[string][]string
+	Logging     LoggingConfig
+}
+type LoggingConfig struct {
+	Enabled   bool
+	Directory string
 }
 type HealthCheckConfig struct {
 	Interval int
@@ -50,6 +58,11 @@ func (c *ApplicationConfig) LoadYaml(path string) error {
 		return err
 	}
 
+	err = c.Fixup()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -68,4 +81,14 @@ func (c *ApplicationConfig) PrintConfig() {
 		return
 	}
 	fmt.Println(string(d))
+}
+
+func (c *ApplicationConfig) Fixup() error {
+
+	if c.Logging.Directory == "" {
+		c.Logging.Directory = filepath.Join(c.DataDir, "logs")
+	}
+
+	return nil
+
 }
