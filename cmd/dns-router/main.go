@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/miekg/dns"
@@ -37,10 +38,10 @@ func main() {
 	mux := dns.NewServeMux()
 
 	log := &lumberjack.Logger{
-		Filename: conf.Logging.Directory,
+		Filename: filepath.Join(conf.Logging.Directory, "current"),
 		// MaxSize:    500, // megabytes
 		MaxBackups: 30,
-		MaxAge:     120, // days
+		MaxAge:     1, // days
 	}
 
 	for n, b := range conf.Backends {
