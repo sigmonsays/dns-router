@@ -98,7 +98,7 @@ func FormatRR(rr dns.RR) string {
 		fmt.Fprintf(buf, "target=%s", v.Target)
 
 	default:
-		fmt.Fprintf(buf, "%T %#v", rr, rr)
+		fmt.Fprintf(buf, "%#v", rr)
 	}
 	return buf.String()
 
