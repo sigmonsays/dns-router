@@ -39,9 +39,9 @@ func main() {
 
 	log := &lumberjack.Logger{
 		Filename: filepath.Join(conf.Logging.Directory, "current"),
-		// MaxSize:    500, // megabytes
-		MaxBackups: 30,
-		MaxAge:     1, // days
+		MaxSize:  10, // megabytes
+		// MaxBackups: 30, // max number of previous logs to keep
+		MaxAge: 60, // max age (in days) to keep old logs
 	}
 
 	for n, b := range conf.Backends {
