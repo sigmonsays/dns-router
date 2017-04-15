@@ -8,6 +8,7 @@ import (
 
 	"github.com/miekg/dns"
 
+	lualib "github.com/sigmonsays/dns-router/lua"
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
 )
@@ -21,6 +22,8 @@ func buildLua(h *PatternHandler, rlog *bytes.Buffer, w dns.ResponseWriter, r *dn
 	setglobal("sprintf", fmt.Sprintf)
 	setglobal("log", log)
 	setglobal("rlog", rlog)
+	setglobal("net", lualib.NewNet())
+	setglobal("strings", lualib.NewStrings())
 	return L
 }
 
@@ -38,8 +41,12 @@ func (h *PatternHandler) ServeLua(rlog *bytes.Buffer, w dns.ResponseWriter, r *d
 		log.Warnf("lua_script %s: %s", luascript, err)
 		return err
 	}
+
+	ctx := &Context{}
+
 	serveFunction := "ServeDns"
 	args := []lua.LValue{
+		luar.New(L, ctx),
 		luar.New(L, w),
 		luar.New(L, r),
 	}

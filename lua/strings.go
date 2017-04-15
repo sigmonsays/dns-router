@@ -1,0 +1,101 @@
+package lua
+
+import "strings"
+
+type Strings struct {
+	ContainsAny    interface{}
+	ToUpper        interface{}
+	HasPrefix      interface{}
+	ContainsRune   interface{}
+	SplitAfter     interface{}
+	Title          interface{}
+	SplitAfterN    interface{}
+	Count          interface{}
+	Split          interface{}
+	ToLowerSpecial interface{}
+	IndexRune      interface{}
+	LastIndex      interface{}
+	FieldsFunc     interface{}
+	LastIndexAny   interface{}
+	SplitN         interface{}
+	Fields         interface{}
+	TrimPrefix     interface{}
+	TrimSuffix     interface{}
+	IndexFunc      interface{}
+	Map            interface{}
+	Compare        interface{}
+	Trim           interface{}
+	TrimSpace      interface{}
+	ToTitleSpecial interface{}
+	ToTitle        interface{}
+	LastIndexByte  interface{}
+	ToLower        interface{}
+	EqualFold      interface{}
+	TrimRightFunc  interface{}
+	TrimFunc       interface{}
+	IndexByte      interface{}
+	Index          interface{}
+	NewReplacer    interface{}
+	Replace        interface{}
+	HasSuffix      interface{}
+	TrimRight      interface{}
+	Contains       interface{}
+	TrimLeftFunc   interface{}
+	TrimLeft       interface{}
+	IndexAny       interface{}
+	NewReader      interface{}
+	Repeat         interface{}
+	ToUpperSpecial interface{}
+	LastIndexFunc  interface{}
+	Join           interface{}
+}
+
+func NewStrings() *Strings {
+	return &Strings{
+		Compare:        strings.Compare,
+		ToUpper:        strings.ToUpper,
+		IndexFunc:      strings.IndexFunc,
+		TrimFunc:       strings.TrimFunc,
+		ToTitleSpecial: strings.ToTitleSpecial,
+		Title:          strings.Title,
+		Trim:           strings.Trim,
+		Replace:        strings.Replace,
+		Repeat:         strings.Repeat,
+		TrimRight:      strings.TrimRight,
+		SplitAfter:     strings.SplitAfter,
+		LastIndexAny:   strings.LastIndexAny,
+		TrimLeftFunc:   strings.TrimLeftFunc,
+		ContainsRune:   strings.ContainsRune,
+		ToUpperSpecial: strings.ToUpperSpecial,
+		IndexByte:      strings.IndexByte,
+		ToLowerSpecial: strings.ToLowerSpecial,
+		IndexRune:      strings.IndexRune,
+		TrimRightFunc:  strings.TrimRightFunc,
+		HasSuffix:      strings.HasSuffix,
+		ToTitle:        strings.ToTitle,
+		SplitAfterN:    strings.SplitAfterN,
+		TrimPrefix:     strings.TrimPrefix,
+		TrimSuffix:     strings.TrimSuffix,
+		Join:           strings.Join,
+		Contains:       strings.Contains,
+		LastIndexByte:  strings.LastIndexByte,
+		Fields:         strings.Fields,
+		LastIndex:      strings.LastIndex,
+		HasPrefix:      strings.HasPrefix,
+		IndexAny:       strings.IndexAny,
+		TrimLeft:       strings.TrimLeft,
+		TrimSpace:      strings.TrimSpace,
+		NewReader:      strings.NewReader,
+		SplitN:         strings.SplitN,
+		Index:          strings.Index,
+		FieldsFunc:     strings.FieldsFunc,
+		Count:          strings.Count,
+		NewReplacer:    strings.NewReplacer,
+		ContainsAny:    strings.ContainsAny,
+		LastIndexFunc:  strings.LastIndexFunc,
+		EqualFold:      strings.EqualFold,
+		Split:          strings.Split,
+		ToLower:        strings.ToLower,
+		Map:            strings.Map,
+	}
+}
