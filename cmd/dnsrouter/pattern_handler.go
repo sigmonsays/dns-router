@@ -14,10 +14,11 @@ import (
 type PatternHandler struct {
 	*dns_router.RequestHandler
 
-	Override map[string]string
-	IPAlias  map[string]string
-	Log      io.Writer
-	Pattern  string
+	Override  map[string]string
+	IPAlias   map[string]string
+	Log       io.Writer
+	Pattern   string
+	LuaScript string
 }
 
 func (h *PatternHandler) AnswerDescription(r *dns.Msg) string {
@@ -55,34 +56,30 @@ func (h *PatternHandler) FindOverride(in *dns.Msg) *OverrideResponse {
 	return ret
 }
 
+//
+// call chain notes
+// ServeDNS
+//   -> if override then ServeOverride
+//   -> if backend is not alive then ServeDefaultDNS
+//   -> if lua script then ServeLua
+//   - query backend specific servers
+//
 func (h *PatternHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
-
 	log := bytes.NewBuffer(nil) // request log
 
 	override := h.FindOverride(r)
 	if override.Found {
-
-		fmt.Fprintf(log, "override=true ")
-
-		reply := new(dns.Msg)
-		reply.SetReply(r)
-		rheader := dns.RR_Header{
-			Name:   override.Name,
-			Rrtype: dns.TypeA,
-			Class:  dns.ClassINET,
-			Ttl:    300,
-		}
-		rr := new(dns.A)
-		rr.Hdr = rheader
-		rr.A = net.ParseIP(override.IP)
-		reply.Answer = append(reply.Answer, rr)
-		w.WriteMsg(reply)
-		h.LogRoundTrip(log, w, r, reply)
+		h.ServeOverride(log, w, r, override)
 		return
 	}
 
 	if h.BackendAlive() == false {
-		h.ServeDefaultDNS(w, r)
+		h.ServeDefaultDNS(log, w, r)
+		return
+	}
+
+	if h.LuaScript != "" {
+		h.ServeLua(log, w, r)
 		return
 	}
 
@@ -102,11 +99,31 @@ func (h *PatternHandler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	}
 }
 
+func (h *PatternHandler) ServeOverride(log *bytes.Buffer, w dns.ResponseWriter, r *dns.Msg, override *OverrideResponse) {
+	fmt.Fprintf(log, "override=true ")
+
+	reply := new(dns.Msg)
+	reply.SetReply(r)
+	rheader := dns.RR_Header{
+		Name:   override.Name,
+		Rrtype: dns.TypeA,
+		Class:  dns.ClassINET,
+		Ttl:    300,
+	}
+	rr := new(dns.A)
+	rr.Hdr = rheader
+	rr.A = net.ParseIP(override.IP)
+	reply.Answer = append(reply.Answer, rr)
+	w.WriteMsg(reply)
+	h.LogRoundTrip(log, w, r, reply)
+	return
+}
+
 func (h *PatternHandler) ServerCount() int {
 	return len(h.Servers)
 }
 
-func (h *PatternHandler) LogRoundTrip(log *bytes.Buffer, w dns.ResponseWriter, in *dns.Msg, out *dns.Msg) {
+func (h *PatternHandler) LogRoundTrip(rlog *bytes.Buffer, w dns.ResponseWriter, in *dns.Msg, out *dns.Msg) {
 	laddr := w.LocalAddr()
 	raddr := w.RemoteAddr()
 
@@ -153,7 +170,7 @@ func (h *PatternHandler) LogRoundTrip(log *bytes.Buffer, w dns.ResponseWriter, i
 	fmt.Fprintf(buf, "%s %s ", question, answer)
 
 	// add additional log info
-	buf.Write(log.Bytes())
+	buf.Write(rlog.Bytes())
 
 	fmt.Printf("RoundTrip %s\n", buf.String())
 

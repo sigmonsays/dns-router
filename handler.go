@@ -1,6 +1,7 @@
 package dns_router
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/miekg/dns"
@@ -12,7 +13,17 @@ type Handler interface {
 	ServerName(idx int) string
 }
 
+func NewRequestHandler(num_servers int, DefaultServers []string) *RequestHandler {
+	h := &RequestHandler{
+		DefaultServers: DefaultServers,
+	}
+	return h
+}
+
 type RequestHandler struct {
+
+	// the top level directory of the root dir. usually the directory of the config file
+	RootDir string
 
 	// dns servers to use incase backend fails
 	DefaultServers []string
@@ -27,13 +38,6 @@ type RequestHandler struct {
 	Servers []string
 }
 
-func NewRequestHandler(num_servers int, DefaultServers []string) *RequestHandler {
-	h := &RequestHandler{
-		DefaultServers: DefaultServers,
-	}
-	return h
-}
-
 func (h *RequestHandler) ServerName(idx int) string {
 	return h.Servers[idx]
 }
@@ -45,11 +49,13 @@ func (h *RequestHandler) SetAlive(idx int, alive CheckState) error {
 func (h *RequestHandler) BackendAlive() bool {
 	return h.HealthCheck.BackendAlive()
 }
+
 func (h *RequestHandler) QueryDescription(r *dns.Msg) string {
 	return fmt.Sprintf("%s", r.Question[0].Name)
 }
 
-func (h *RequestHandler) ServeDefaultDNS(w dns.ResponseWriter, r *dns.Msg) {
+func (h *RequestHandler) ServeDefaultDNS(rlog *bytes.Buffer, w dns.ResponseWriter, r *dns.Msg) {
+	fmt.Fprintf(rlog, "default=true ")
 	// addr := w.RemoteAddr()
 	// query := h.QueryDescription(r)
 	c := new(dns.Client)

@@ -48,6 +48,7 @@ func main() {
 		num := n + 1
 
 		request_handler := dns_router.NewRequestHandler(len(b.Servers), conf.Default.Servers)
+		request_handler.RootDir = filepath.Dir(configfile)
 		request_handler.Number = num
 		request_handler.Servers = b.Servers
 
@@ -59,26 +60,28 @@ func main() {
 		}
 		request_handler.HealthCheck = healthcheck
 
-		t := &PatternHandler{
+		h := &PatternHandler{
 			RequestHandler: request_handler,
 			Pattern:        b.Pattern,
 			Log:            log,
 			IPAlias:        conf.IPAlias,
 			Override:       conf.Hosts,
+			LuaScript:      b.LuaScript,
 		}
 
 		if b.HealthCheck {
-			go dns_router.HealthCheck(conf.HealthCheck, healthcheck, t)
+			go dns_router.HealthCheck(conf.HealthCheck, healthcheck, h)
 		}
 
-		wt := NewWrappedHandler(t, wopts)
+		wh := NewWrappedHandler(h, wopts)
 
-		mux.Handle(b.Pattern, wt)
+		mux.Handle(b.Pattern, wh)
 		fmt.Printf("pattern=%s servers=%s\n", b.Pattern, b.Servers)
 	}
 
 	healthcheck := dns_router.NewNullHealthCheck()
 	request_handler := dns_router.NewRequestHandler(len(conf.Default.Servers), conf.Default.Servers)
+	request_handler.RootDir = filepath.Dir(configfile)
 	request_handler.Number = 0
 	request_handler.Servers = conf.Default.Servers
 	request_handler.HealthCheck = healthcheck

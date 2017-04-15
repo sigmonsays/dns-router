@@ -44,6 +44,7 @@ type BackendConfig struct {
 	Pattern     string
 	HealthCheck bool
 	Servers     []string
+	LuaScript   string `yaml:"lua_script"`
 }
 
 func Default() *ApplicationConfig {
