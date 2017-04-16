@@ -9,7 +9,22 @@ import (
 type Context struct {
 }
 
-func (me *Context) ReplyA(r *dns.Msg, name string, ip net.IP, ttl uint32) *dns.Msg {
+func (me *Context) WriteRR(w dns.ResponseWriter, r *dns.Msg, rr_string string) error {
+	reply := new(dns.Msg)
+	reply.SetReply(r)
+	rr, err := dns.NewRR(rr_string)
+	if err != nil {
+		log.Warnf("NewRR %s: %s", rr_string, err)
+		return err
+	}
+	reply.Answer = append(reply.Answer, rr)
+	w.WriteMsg(reply)
+	return nil
+}
+
+// return an A record reply message
+func (me *Context) ReplyA(r *dns.Msg, name string, ip_string string, ttl uint32) *dns.Msg {
+	ip := net.ParseIP(ip_string)
 	reply := new(dns.Msg)
 	reply.SetReply(r)
 	rheader := dns.RR_Header{
