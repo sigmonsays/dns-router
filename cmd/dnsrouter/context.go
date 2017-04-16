@@ -9,6 +9,11 @@ import (
 type Context struct {
 }
 
+// convenience function to return the first question
+func (me *Context) Question(r *dns.Msg) dns.Question {
+	return r.Question[0]
+}
+
 func (me *Context) WriteRR(w dns.ResponseWriter, r *dns.Msg, rr_string string) error {
 	reply := new(dns.Msg)
 	reply.SetReply(r)
