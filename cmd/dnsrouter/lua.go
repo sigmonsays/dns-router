@@ -22,8 +22,14 @@ func buildLua(h *PatternHandler, rlog *bytes.Buffer, w dns.ResponseWriter, r *dn
 	setglobal("sprintf", fmt.Sprintf)
 	setglobal("log", log)
 	setglobal("rlog", rlog)
+
+	// modules
 	setglobal("net", lualib.NewNet())
 	setglobal("strings", lualib.NewStrings())
+	setglobal("path", lualib.NewPath())
+	setglobal("hex", lualib.NewHex())
+	setglobal("base64", lualib.NewBase64())
+
 	return L
 }
 
