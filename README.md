@@ -1,11 +1,17 @@
-dns-router
-==========
+# dns-router
 
 simple personal dns router
 
+# features
 
-install (from source)
-===========================
+- default handler
+- configurable dns backends per pattern
+- pattern based dispatch 
+- lua scripting support
+- redis support
+
+
+# install (from source)
 
 <pre>
    export GOPATH=$HOME/go-apps/dns-router
@@ -19,8 +25,7 @@ The only remaining step is to add $GOPATH/bin to $PATH
    export PATH="$GOPATH/bin:$PATH"
 </pre>
 
-configuration
-===========================
+# configuration
 
 by default dns-router reads its configuration from /etc/dns-router/config.yaml
 
