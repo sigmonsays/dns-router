@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/garyburd/redigo/redis"
 	"github.com/miekg/dns"
 	"github.com/sigmonsays/dns-router"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -16,6 +18,14 @@ var spewconf = spew.ConfigState{
 	Indent:         "  ",
 	DisableMethods: true,
 	MaxDepth:       5,
+}
+
+func newPool(addr string) *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     5,
+		IdleTimeout: 240 * time.Second,
+		Dial:        func() (redis.Conn, error) { return redis.Dial("tcp", addr) },
+	}
 }
 
 func main() {
@@ -44,11 +54,14 @@ func main() {
 		MaxAge: 60, // max age (in days) to keep old logs
 	}
 
+	redisPool := newPool(conf.Redis.Address)
+
 	for n, b := range conf.Backends {
 		num := n + 1
 
 		request_handler := dns_router.NewRequestHandler(len(b.Servers), conf.Default.Servers)
 		request_handler.RootDir = filepath.Dir(configfile)
+		request_handler.RedisPool = redisPool
 		request_handler.Number = num
 		request_handler.Servers = b.Servers
 
@@ -82,6 +95,7 @@ func main() {
 	healthcheck := dns_router.NewNullHealthCheck()
 	request_handler := dns_router.NewRequestHandler(len(conf.Default.Servers), conf.Default.Servers)
 	request_handler.RootDir = filepath.Dir(configfile)
+	request_handler.RedisPool = redisPool
 	request_handler.Number = 0
 	request_handler.Servers = conf.Default.Servers
 	request_handler.HealthCheck = healthcheck

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/miekg/dns"
 )
 
@@ -36,6 +37,8 @@ type RequestHandler struct {
 
 	// where we send requests
 	Servers []string
+
+	RedisPool *redis.Pool
 }
 
 func (h *RequestHandler) ServerName(idx int) string {

@@ -28,6 +28,8 @@ type ApplicationConfig struct {
 
 	// logging config
 	Logging LoggingConfig
+
+	Redis RedisConfig
 }
 type LoggingConfig struct {
 	Enabled   bool
@@ -47,10 +49,17 @@ type BackendConfig struct {
 	LuaScript   string `yaml:"lua_script"`
 }
 
+type RedisConfig struct {
+	Address string
+}
+
 func Default() *ApplicationConfig {
 	c := &ApplicationConfig{
 		BindAddr: "127.0.0.1:53",
 		Hosts:    make(map[string]string),
+		Redis: RedisConfig{
+			Address: "127.0.0.1:6379",
+		},
 	}
 	return c
 }

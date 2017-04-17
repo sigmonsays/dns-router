@@ -23,6 +23,8 @@ func buildLua(h *PatternHandler, rlog *bytes.Buffer, w dns.ResponseWriter, r *dn
 	setglobal("log", log)
 	setglobal("rlog", rlog)
 
+	setglobal("redigo", NewRedigo())
+
 	// modules
 	setglobal("net", lualib.NewNet())
 	setglobal("strings", lualib.NewStrings())
@@ -35,6 +37,10 @@ func buildLua(h *PatternHandler, rlog *bytes.Buffer, w dns.ResponseWriter, r *dn
 
 func (h *PatternHandler) ServeLua(rlog *bytes.Buffer, w dns.ResponseWriter, r *dns.Msg) error {
 	L := buildLua(h, rlog, w, r)
+
+	rds := h.RedisPool.Get()
+	L.SetGlobal("redis", luar.New(L, rds))
+	defer rds.Close()
 
 	var luascript string
 	if strings.HasPrefix(h.LuaScript, "/") {
