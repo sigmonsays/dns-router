@@ -6,8 +6,9 @@ bindaddr: 127.0.0.1:5190
 healthcheck:
   interval: 3
 
+# Static hosts
 hosts:
-   thechive.com: 127.0.0.1
+   thechive.com.: 127.0.0.1
 
 backends:
    - pattern: example.net

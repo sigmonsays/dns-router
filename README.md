@@ -9,6 +9,16 @@ simple personal dns router
 - pattern based dispatch 
 - lua scripting support
 - redis support
+- static host override 
+
+
+# Per Application DNS override
+
+Using `LD_PRELOAD` it is possible to load a shared library and change the DNS resolution functions for a single application.
+
+While not part of dns-router it may be useful so I figured i'd include it here. 
+
+See https://github.com/BackSlasher/dns-override for details
 
 
 # install (from source)
@@ -29,6 +39,9 @@ The only remaining step is to add $GOPATH/bin to $PATH
 
 by default dns-router reads its configuration from /etc/dns-router/config.yaml
 
+
+`Example configuration`
+
 <pre>
    bindaddr: 127.0.0.1:53
    default:
@@ -36,6 +49,8 @@ by default dns-router reads its configuration from /etc/dns-router/config.yaml
      - 10.11.97.15:53
      - 10.12.64.15:53
      - 10.12.65.15:53
+   hosts:
+     foobar.example.net.: 192.168.6.4
    backends:
    - pattern: example.net
      servers:
@@ -45,3 +60,8 @@ by default dns-router reads its configuration from /etc/dns-router/config.yaml
      servers:
      - 127.0.0.1:53
 </pre>
+
+`Notes on above configuration`
+
+- `hosts` allows assigning static addresses for a given host (`A` record with a single IP)
+
