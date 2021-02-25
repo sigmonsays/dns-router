@@ -9,4 +9,4 @@ Package: dns-router
 Architecture: any
 Pre-Depends: dpkg (>= 1.16.1), ${misc:Pre-Depends}
 Depends:  ${misc:Depends}
-Description: git caddy
+Description: dns-router
