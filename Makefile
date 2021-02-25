@@ -6,8 +6,6 @@ export GOWORKSPACE := $(shell pwd)
 export GOBIN := $(GOWORKSPACE)/bin
 export GO111MODULE := on
 
-GIT_VERSION = $(shell bash debian/print-git-version.sh)
-
 GO_BINS =
 GO_BINS += dnsrouter
 
